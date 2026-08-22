@@ -64,6 +64,7 @@
           <select id="method">
             <option value="hours">By hours worked (equal hourly)</option>
             <option value="points">By hours × role weight (points)</option>
+            <option value="pools">By role groups % (FOH/BOH pools)</option>
           </select>
         </label>
       </div>
@@ -78,6 +79,14 @@
         </div>
       </div>
       <div id="team"></div>
+
+      <div id="poolEditor" class="pool-editor hidden">
+        <div class="items-head" style="margin-top:.6rem">
+          <h2 style="text-transform:none;letter-spacing:0">3. Pool split % (role groups)</h2>
+        </div>
+        <p class="hint" style="margin:0 0 .5rem">Each group gets its % of the total, split <em>within the group</em> by hours. Percentages auto-normalize to 100%.</p>
+        <div class="fields three" id="poolRows"></div>
+      </div>
 
       <div class="actions">
         <button id="printBtn" class="btn primary">🖨️ Print payout sheet</button>
@@ -122,6 +131,7 @@
     </div>
 
     <h2 id="faq">FAQ</h2>
+    <div class="faq-item"><h3>What is the role-groups (pools) method?</h3><p>The classic FOH/BOH structure: each role group (front of house, back of house, support, management) gets a fixed % of the total pool — e.g. 60% FOH / 40% BOH — then each group's share is split by hours within that group. Percentages auto-normalize, and each person's role decides their group.</p></div>
     <div class="faq-item"><h3>How does the hours split work?</h3><p>Each person gets <code>tips × (their hours ÷ total hours)</code>. Anna works 40 of 100 team hours on a $1,000 pool → Anna gets $400.</p></div>
     <div class="faq-item"><h3>How does the points / role-weight split work?</h3><p>A person's points = hours × role weight (server 1.0, busser 0.6, kitchen 0.7 — editable in the table). Payout = <code>tips × (their points ÷ total points)</code>. This keeps senior roles' contributions weighted while still scaling with hours.</p></div>
     <div class="faq-item"><h3>Does it handle cents and rounding?</h3><p>Yes. Payouts round to the cent and the remainder goes to the first person, so Σ payouts always equals the pool exactly — your sheet balances.</p></div>

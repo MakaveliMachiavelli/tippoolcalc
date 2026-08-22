@@ -10,6 +10,13 @@ const ROLES = [
   ['Food Runner', 0.6], ['Host', 0.5], ['Kitchen / BOH', 0.7],
   ['Dishwasher', 0.5], ['Shift Lead', 0.8], ['Custom', null]
 ];
+const ROLE_GROUP = {
+  'Server': 'FOH', 'Bartender': 'FOH', 'Host': 'FOH',
+  'Barback': 'Support', 'Busser': 'Support', 'Food Runner': 'Support',
+  'Kitchen / BOH': 'BOH', 'Dishwasher': 'BOH', 'Shift Lead': 'Mgmt', 'Custom': 'FOH'
+};
+const GROUPS = [['FOH', 'Front of house %'], ['BOH', 'Back of house %'], ['Support', 'Support %'], ['Mgmt', 'Management %']];
+let poolPcts = { FOH: 60, BOH: 40, Support: 0, Mgmt: 0 };
 
 let team = [
   { name: 'Anna', role: 'Server', wt: 1.0, hrs: 40 },
@@ -32,16 +39,32 @@ function calc() {
     const h = Number(t.hrs) || 0, w = Number(t.wt) || 0;
     return { ...t, h, pts: method === 'points' ? h * w : h };
   });
-  const denom = rows.reduce((s, r) => s + (method === 'points' ? r.pts : r.h), 0);
-  const out = rows.map(r => {
-    const share = denom > 0 ? (method === 'points' ? r.pts : r.h) / denom : 0;
-    return { ...r, share, payout: Math.round(tips * share * 100) / 100 };
-  });
+  let out;
+  if (method === 'pools') {
+    // normalize group percentages; split each group's pool by hours within it
+    const pctSum = GROUPS.reduce((s, [g]) => s + (Number(poolPcts[g]) || 0), 0);
+    const gHours = {};
+    rows.forEach(r => { const g = ROLE_GROUP[r.role] || 'FOH'; gHours[g] = (gHours[g] || 0) + r.h; });
+    out = rows.map(r => {
+      const g = ROLE_GROUP[r.role] || 'FOH';
+      const gp = pctSum > 0 ? (Number(poolPcts[g]) || 0) / pctSum : 0;
+      const hShare = gHours[g] > 0 ? r.h / gHours[g] : 0;
+      return { ...r, share: gp * hShare, payout: Math.round(tips * gp * hShare * 100) / 100 };
+    });
+  } else {
+    const denom = rows.reduce((s, r) => s + (method === 'points' ? r.pts : r.h), 0);
+    out = rows.map(r => {
+      const share = denom > 0 ? (method === 'points' ? r.pts : r.h) / denom : 0;
+      return { ...r, share, payout: Math.round(tips * share * 100) / 100 };
+    });
+  }
   // balance the sheet: give rounding remainder to the first person
-  const sum = out.reduce((s, r) => s + r.payout, 0);
+  const sum = out.reduce((s, r) => s + (r.payout || 0), 0);
   const remainder = Math.round((tips - sum) * 100) / 100;
-  if (out.length) out[0].payout = Math.round((out[0].payout + remainder) * 100) / 100;
-  return { tips, method, rows: out, denom };
+  if (out.length && Number.isFinite(out[0].payout)) out[0].payout = Math.round((out[0].payout + remainder) * 100) / 100;
+  const denomShown = method === 'points' ? out.reduce((s, r) => s + r.pts, 0)
+    : method === 'hours' ? out.reduce((s, r) => s + r.h, 0) : 0;
+  return { tips, method, rows: out, denom: denomShown };
 }
 
 /* ============ team editor ============ */
@@ -62,12 +85,22 @@ function renderTeam() {
   });
 }
 
+/* ============ pool editor ============ */
+function renderPoolEditor() {
+  $('poolRows').innerHTML = GROUPS.map(([g, label]) =>
+    `<label>${label}<input type="number" min="0" max="100" step="any" value="${poolPcts[g]}" data-g="${g}"></label>`
+  ).join('');
+}
+
 /* ============ payout doc ============ */
 function render() {
   const c = calc();
+  $('poolEditor').classList.toggle('hidden', c.method !== 'pools');
   $('p_period').textContent = $('period').value || 'Week of —';
   $('p_method').textContent = 'Method: ' + (c.method === 'points'
-    ? 'hours × role weight (points)' : 'hours worked') + (c.denom > 0 ? ` · total ${c.method === 'points' ? 'points' : 'hours'}: ${c.denom}` : '');
+    ? 'hours × role weight (points)' : c.method === 'pools'
+    ? 'role-group pools (split by hours within group)' : 'hours worked') +
+    (c.denom > 0 ? ` · total ${c.method === 'points' ? 'points' : 'hours'}: ${c.denom}` : '');
   const tb = $('p_rows');
   tb.innerHTML = '';
   c.rows.forEach(r => {
@@ -93,7 +126,7 @@ function saveDraft() {
   try {
     localStorage.setItem(LS.draft, JSON.stringify({
       tips: $('tips').value, currency: $('currency').value, method: $('method').value,
-      period: $('period').value, team
+      period: $('period').value, team, poolPcts
     }));
   } catch (e) {}
 }
@@ -104,6 +137,7 @@ function loadDraft() {
     $('tips').value = d.tips ?? 1000; $('currency').value = d.currency ?? '$';
     $('method').value = d.method ?? 'hours'; $('period').value = d.period ?? '';
     if (Array.isArray(d.team) && d.team.length) team = d.team;
+    if (d.poolPcts) poolPcts = { ...poolPcts, ...d.poolPcts };
   } catch (e) {}
 }
 
@@ -166,9 +200,16 @@ function renderTeams() {
 document.addEventListener('DOMContentLoaded', () => {
   loadDraft();
   renderTeam();
+  renderPoolEditor();
   applyPro();
 
   ['tips', 'currency', 'method', 'period'].forEach(id => $(id).addEventListener('input', render));
+  $('poolRows').addEventListener('input', e => {
+    const g = e.target.dataset.g;
+    if (!g) return;
+    poolPcts[g] = Number(e.target.value) || 0;
+    render();
+  });
 
   $('team').addEventListener('input', e => {
     const t = e.target, i = +t.dataset.i, f = t.dataset.f;
