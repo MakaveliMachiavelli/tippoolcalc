@@ -2,7 +2,7 @@
 'use strict';
 
 /* PRO unlock codes. OWNER: change before promoting (see PAYMENTS.md). */
-const PRO_CODES = ['TIPPOOL-PRO-999', 'TPC-DEMO'];
+const PRO_CODES = ['TPC-PRO-999-87B9-7D47', 'TPC-PRO-999-DEMO-B61A-B2D1'];
 const LS = { draft: 'tpc_draft', pro: 'tpc_pro', teams: 'tpc_teams', hist: 'tpc_hist' };
 
 const ROLES = [
