@@ -1,6 +1,6 @@
 /* TipPoolCalc — styles */
 :root{
-  --green:#0e9f6e; --ink:#101828; --muted:#667085; --line:#e4e7ec;
+  --green:#0e9f6e; --ink:#101828; --muted:#3d4a5c; --line:#e4e7ec;
   --bg:#f4faf7; --card:#fff; --red:#dc2626;
 }
 *{box-sizing:border-box}
