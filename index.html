@@ -122,7 +122,195 @@
         <p style="color:var(--p-muted);">Built for PH hospitality · <a href="https://makavelimachiavelli.github.io/zinvent-hub/">Zinvent</a></p>
       </div>
     </section>
-  </main>
+  
+  <section id="z-app" class="z-section" hidden>
+    <div class="z-wrap" id="z-app-root">
+
+  >
+
+<header class="site-header">
+  <div class="brand">Tip<span>Pool</span>Calc</div>
+  <nav>
+    <span id="proBadge" class="badge hidden">PRO</span>
+    <a href="#faq">FAQ</a>
+    <button id="proBtn" class="btn-link">Get PRO — $9.99</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Tip Pool Calculator</h1>
+    <p class="sub">Split tips fairly by <strong>hours worked</strong> or <strong>role weights</strong> in 2 minutes. Built for restaurants, bars &amp; cafés that don't want a <em>$150/month</em> tip-software subscription. No signup — everything runs in your browser.</p>
+    <div class="hero-chips">
+      <span>✓ Hours-based splits</span>
+      <span>✓ Role / points weights</span>
+      <span>✓ Printable payout sheet</span>
+      <span>✓ 100% free tier</span>
+    </div>
+  </section>
+
+  <div class="app-grid">
+
+    <section class="panel">
+      <h2>1. The pool</h2>
+      <div class="fields three">
+        <label>Total tips to split
+          <input id="tips" type="number" min="0" step="any" value="1000">
+        </label>
+        <label>Currency
+          <select id="currency">
+            <option value="$">$ USD</option>
+            <option value="€">€ EUR</option>
+            <option value="£">£ GBP</option>
+            <option value="₱">₱ PHP</option>
+            <option value="C$">C$ CAD</option>
+            <option value="A$">A$ AUD</option>
+          </select>
+        </label>
+        <label>Split method
+          <select id="method">
+            <option value="hours">By hours worked (equal hourly)</option>
+            <option value="points">By hours × role weight (points)</option>
+            <option value="pools">By role groups % (FOH/BOH pools)</option>
+          </select>
+        </label>
+      </div>
+      <label class="week-label">Week / period label <input id="period" placeholder="Week of Aug 18–24"></label>
+
+      <div class="items-head">
+        <h2>2. Your team</h2>
+        <div>
+          <button id="saveTeamBtn" class="btn-tiny hidden" title="PRO: save this team">💾 Save team (PRO)</button>
+          <button id="loadTeamBtn" class="btn-tiny hidden" title="PRO: load saved team">📁 Load (PRO)</button>
+          <button id="addRow" class="btn-small">+ Add person</button>
+        </div>
+      </div>
+      <div id="team"></div>
+
+      <div id="poolEditor" class="pool-editor hidden">
+        <div class="items-head" style="margin-top:.6rem">
+          <h2 style="text-transform:none;letter-spacing:0">3. Pool split % (role groups)</h2>
+        </div>
+        <p class="hint" style="margin:0 0 .5rem">Each group gets its % of the total, split <em>within the group</em> by hours. Percentages auto-normalize to 100%.</p>
+        <div class="fields three" id="poolRows"></div>
+      </div>
+
+      <div class="actions">
+        <button id="printBtn" class="btn primary">🖨️ Print payout sheet</button>
+        <button id="resetBtn" class="btn">Reset</button>
+        <button id="historyBtn" class="btn hidden">📊 History (PRO)</button>
+      </div>
+      <p class="hint">Rounding: payouts are rounded to the cent; the remainder is added to the first person so the sheet always balances.</p>
+    </section>
+
+    <section class="panel">
+      <h2 class="preview-title">Payouts</h2>
+      <div id="doc" class="payout-doc">
+        <div class="pd-head">
+          <div class="pd-title">TIP PAYOUT SHEET</div>
+          <div class="pd-period" id="p_period">Week of —</div>
+        </div>
+        <table class="pd-table">
+          <thead>
+            <tr><th>Name</th><th>Role</th><th class="r">Hrs</th><th class="r">Share</th><th class="r">Payout</th></tr>
+          </thead>
+          <tbody id="p_rows"></tbody>
+          <tfoot>
+            <tr><td colspan="4" class="r">TOTAL</td><td class="r" id="p_total">—</td></tr>
+          </tfoot>
+        </table>
+        <div class="pd-note" id="p_method">Method: hours</div>
+        <div class="pd-sign">
+          <div class="sig">Manager signature: ________________</div>
+          <div class="sig">Date: ________________</div>
+        </div>
+      </div>
+      <div class="check" id="p_check"></div>
+    </section>
+  </div>
+
+  <section class="marketing">
+    <h2>Why managers use TipPoolCalc</h2>
+    <div class="cards">
+      <div class="card"><h3>⚖️ Fair in 2 minutes</h3><p>Hours-based or role-weighted (points) splits computed instantly, with a payout sheet that always balances to the cent.</p></div>
+      <div class="card"><h3>🧾 Transparent for staff</h3><p>Print the payout sheet and pin it — everyone sees the pool, the method, and their share. Fewer arguments, more trust.</p></div>
+      <div class="card"><h3>💸 No subscription</h3><p>Tip software runs $129–$150/month per location. This is free for the calculator; PRO is $9.99 once. Done.</p></div>
+    </div>
+
+    <h2 id="faq">FAQ</h2>
+    <div class="faq-item"><h3>What is the role-groups (pools) method?</h3><p>The classic FOH/BOH structure: each role group (front of house, back of house, support, management) gets a fixed % of the total pool — e.g. 60% FOH / 40% BOH — then each group's share is split by hours within that group. Percentages auto-normalize, and each person's role decides their group.</p></div>
+    <div class="faq-item"><h3>How does the hours split work?</h3><p>Each person gets <code>tips × (their hours ÷ total hours)</code>. Anna works 40 of 100 team hours on a $1,000 pool → Anna gets $400.</p></div>
+    <div class="faq-item"><h3>How does the points / role-weight split work?</h3><p>A person's points = hours × role weight (server 1.0, busser 0.6, kitchen 0.7 — editable in the table). Payout = <code>tips × (their points ÷ total points)</code>. This keeps senior roles' contributions weighted while still scaling with hours.</p></div>
+    <div class="faq-item"><h3>Does it handle cents and rounding?</h3><p>Yes. Payouts round to the cent and the remainder goes to the first person, so Σ payouts always equals the pool exactly — your sheet balances.</p></div>
+    <div class="faq-item"><h3>Is my staff data uploaded anywhere?</h3><p>No. There is no server. Names, hours and saved teams live only in your browser's local storage.</p></div>
+
+    <div class="cta-box">
+      <h2>TipPoolCalc PRO — $9.99 one-time</h2>
+      <ul>
+        <li>💾 <strong>Saved teams</strong> — your regular roster in one click, roster changes in seconds</li>
+        <li>📊 <strong>Weekly history + CSV export</strong> — every payout logged for payroll and dispute-proofing</li>
+        <li>🖨️ <strong>Branded payout sheets</strong> — period label, totals, signature lines, ready to pin</li>
+      </ul>
+      <p class="once">One-time payment. Not a $129/month subscription.</p>
+      <button id="proBtn2" class="btn primary big">Unlock PRO — $9.99</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>TipPoolCalc — free tip pool &amp; tip splitting calculator for restaurants, bars and cafés. Check local tip-pooling laws; some US states restrict manager participation. · <a href="tip-splitting-guide.html">📖 Full guide</a></p>
+</footer>
+
+<!-- PAY MODAL -->
+<div id="payModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" id="payClose">✕</button>
+    <h2>Unlock TipPoolCalc PRO</h2>
+    <p class="price">$9.99 <span>one-time · lifetime · no subscription</span></p>
+    <div class="qr-box">
+      <a id="payLink" href="#" class="pay-alt">💳 Pay by card →</a>
+      <img src="assets/pay-qr.svg" alt="Payment QR (replace with merchant QR)" width="180" height="180">
+    </div>
+    <ol class="pay-steps">
+      <li>Pay $9.99 via the card link or QR.</li>
+      <li>Enter the unlock code you receive.</li>
+    </ol>
+    <div class="code-row">
+      <input id="codeInput" placeholder="Enter unlock code">
+      <button id="codeBtn" class="btn primary">Unlock</button>
+    </div>
+    <p class="code-msg" id="codeMsg"></p>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div id="histModal" class="modal hidden">
+  <div class="modal-card wide">
+    <button class="modal-x" id="histClose">✕</button>
+    <h2>📊 Payout history</h2>
+    <p class="hint">Every printed payout sheet is logged here.</p>
+    <table class="book-table"><thead><tr><th>Period</th><th>Pool</th><th>Team size</th><th class="r">Top payout</th><th>Detail</th></tr></thead><tbody id="histBody"></tbody></table>
+    <div class="actions">
+      <button id="exportCsv" class="btn primary">⬇️ Export CSV</button>
+      <button id="clearHist" class="btn danger">Clear history</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM PICKER MODAL -->
+<div id="teamModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" id="teamClose">✕</button>
+    <h2>📁 Saved teams</h2>
+    <ul id="teamList" class="client-list"></ul>
+  </div>
+</div>
+
+
+
+    </div>
+  </section>
+</main>
   <footer class="z-footer" role="contentinfo">
     <div class="z-wrap">
       <p>&copy; 2025 TipPoolCalc · <a href="https://makavelimachiavelli.github.io/zinvent-hub/privacy.html">Privacy</a> · <a href="https://makavelimachiavelli.github.io/zinvent-hub/terms.html">Terms</a></p>
@@ -134,5 +322,19 @@
     </div>
   </footer>
   <script src="app.js"></script>
+
+<script>
+(function(){
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    var act = btn.getAttribute('data-action');
+    if(act && act.indexOf('new-')===0 || act==='start'){
+      var app = document.getElementById('z-app');
+      if(app){ app.hidden = false; app.scrollIntoView({behavior:'smooth'}); }
+    }
+  });
+})();
+</script>
 </body>
 </html>
